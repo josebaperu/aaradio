@@ -1,0 +1,87 @@
+# tuner station list
+# name<TAB>url<TAB>genre<TAB>favorite(0/1)
+#
+# This file ships with the source and is the default list. Your own edits
+# (from inside the app, or by hand) go to ~/.config/tuner/stations.tsv,
+# which takes precedence over this one when it exists.
+#
+# Sources: radioparadise.com, radiofrance.fr/fip, jazzradio.fr, ouifm.fr,
+# bbc.com/audio, srgssr.ch. Every url below was verified against its stream.
+# OUI FM and BBC stream urls were resolved through the radio.net directory.
+Radio Paradise Main	https://stream.radioparadise.com/mp3-192	eclectic	1
+Radio Paradise Mellow	https://stream.radioparadise.com/mellow-192	mellow mix	0
+Radio Paradise Rock	https://stream.radioparadise.com/rock-192	rock mix	0
+Radio Paradise Global	https://stream.radioparadise.com/global-192	world mix	0
+FIP	https://icecast.radiofrance.fr/fip-midfi.mp3	eclectic	1
+FIP Rock	https://icecast.radiofrance.fr/fiprock-midfi.mp3	rock	0
+FIP Jazz	https://icecast.radiofrance.fr/fipjazz-midfi.mp3	jazz	0
+FIP Groove	https://icecast.radiofrance.fr/fipgroove-midfi.mp3	groove / soul	0
+FIP Pop	https://icecast.radiofrance.fr/fippop-midfi.mp3	pop	0
+FIP Electro	https://icecast.radiofrance.fr/fipelectro-midfi.mp3	electro	0
+FIP Reggae	https://icecast.radiofrance.fr/fipreggae-midfi.mp3	reggae	0
+FIP Metal	https://icecast.radiofrance.fr/fipmetal-midfi.mp3	metal	0
+FIP Hip-Hop	https://icecast.radiofrance.fr/fiphiphop-midfi.mp3	hip hop	0
+FIP Nouveautes	https://icecast.radiofrance.fr/fipnouveautes-midfi.mp3	new releases	0
+Jazz Radio	https://jazzradio.ice.infomaniak.ch/jazzradio-high.mp3	jazz	1
+JZR Classic Jazz	https://jazz-wr01.ice.infomaniak.ch/jazz-wr01-128.mp3	classic jazz	0
+JZR Contemporary Jazz	https://jazz-wr05.ice.infomaniak.ch/jazz-wr05-128.mp3	modern jazz	0
+JZR Jazz & Classique	https://jazz-wr17.ice.infomaniak.ch/jazz-wr17-128.mp3	jazz / classical	0
+JZR Jazz & Cinema	https://jzr-wr20.ice.infomaniak.ch/jzr-wr20.mp3	film jazz	0
+JZR Jazz Fusion	https://jazz-radio-fusion.ice.infomaniak.ch/jazz-radio-fusion.mp3	fusion	0
+JZR Jazzy French	https://jazz-wr18.ice.infomaniak.ch/jazz-wr18-128.mp3	french jazz	0
+JZR New Orleans	https://jazz-wr03.ice.infomaniak.ch/jazz-wr03-128.mp3	new orleans	0
+JZR Manouche	https://jazz-wr02.ice.infomaniak.ch/jazz-wr02-128.mp3	gypsy jazz	0
+JZR Latin Jazz	https://jazz-wr09.ice.infomaniak.ch/jazz-wr09-128.mp3	latin jazz	0
+JZR Afro Jazz	https://jazz-radio-afro.ice.infomaniak.ch/jazz-radio-afro.mp3	afro jazz	0
+JZR Piano	https://jzr-piano.ice.infomaniak.ch/jzr-piano.mp3	piano jazz	0
+JZR Saxo	https://jzr-saxo.ice.infomaniak.ch/jzr-saxo.mp3	sax jazz	0
+JZR Crooner	https://jazzradiofestivalmontreal.ice.infomaniak.ch/jazzradiofestivalmontreal-128.mp3	crooners	0
+JZR Ladies	https://jazzladiescrooners.ice.infomaniak.ch/jazzladiescrooners-high.mp3	vocal jazz	0
+JZR Only Women	https://jazz-wr16.ice.infomaniak.ch/jazz-wr16-128.mp3	women artists	0
+JZR Electro Swing	https://jazz-wr04.ice.infomaniak.ch/jazz-wr04-128.mp3	electro swing	0
+JZR Lounge	https://jazzlounge.ice.infomaniak.ch/jazzlounge-high.mp3	lounge	0
+JZR Zen Attitude	https://zen-attitude.ice.infomaniak.ch/zen-attitude.mp3	chill jazz	0
+JZR Blues	https://jazzblues.ice.infomaniak.ch/jazzblues-high.mp3	blues	0
+JZR Soul	https://jazz-wr10.ice.infomaniak.ch/jazz-wr10-128.mp3	soul	0
+JZR Soul Food	https://jazz-wr12.ice.infomaniak.ch/jazz-wr12-128.mp3	soul selection	0
+JZR Funk	https://jazz-wr06.ice.infomaniak.ch/jazz-wr06-128.mp3	funk	0
+JZR Groove	https://jazz-wr08.ice.infomaniak.ch/jazz-wr08-128.mp3	groove	0
+JZR Groov'Up	https://jazz-wr13.ice.infomaniak.ch/jazz-wr13-128.mp3	groove selection	0
+JZR Black Music	https://jazzblackmusic.ice.infomaniak.ch/jazzblackmusic-high.mp3	black music	0
+JZR Stax & Motown	https://jazz-wr15.ice.infomaniak.ch/jazz-wr15-128.mp3	stax / motown	0
+JZR Gospel	https://jazz-wr07.ice.infomaniak.ch/jazz-wr07-128.mp3	gospel	0
+JZR Happy Hour	https://jazz-wr14.ice.infomaniak.ch/jazz-wr14-128.mp3	party jazz	0
+JZR Reprises	https://reprises.ice.infomaniak.ch/reprises-high.mp3	covers	0
+JZR Nouveautes Jazz	https://jzr-wr99.ice.infomaniak.ch/jzr-wr99.mp3	new jazz	0
+JZR Nouveautes Soul	https://jzr-wr19.ice.infomaniak.ch/jzr-wr19-128.mp3	new soul	0
+JZR Sly Johnson	https://jazz-thema.ice.infomaniak.ch/jazz-thema.mp3	artist radio	0
+JZR Ibrahim Maalouf	https://ibrahimmaaloufradiobyjazzradio.ice.infomaniak.ch/i-maalouf-radio-by-jazz-radio.mp3	artist radio	0
+JZR Pascal Obispo	https://jazzradiopascalobispo.ice.infomaniak.ch/jazzradiopascalobispo-128.mp3	artist radio	0
+OUI FM	https://ouifm.ice.infomaniak.ch/ouifm-high.mp3	rock	1
+OUI FM Classic Rock	https://ouifm3.ice.infomaniak.ch/ouifm3.mp3	classic rock	0
+OUI FM Rock Inde	https://ouifm5.ice.infomaniak.ch/ouifm5.mp3	indie rock	0
+OUI FM Alternatif	https://ouifm2.ice.infomaniak.ch/ouifm2.mp3	alternative	0
+OUI FM Blues'N'Rock	https://ouifmbluesnrock.ice.infomaniak.ch/ouifmbluesnrock-128.mp3	blues rock	0
+OUI FM Acoustic	https://ouifmacoustic.ice.infomaniak.ch/ouifmacoustic.mp3	acoustic	0
+OUI FM Rock 60's	https://ouifmrock60s.ice.infomaniak.ch/ouifmsixties.mp3	60s rock	0
+OUI FM Rock 70's	https://ouifmrock70s.ice.infomaniak.ch/ouifmseventies.mp3	70s rock	0
+OUI FM Rock 80's	https://ouifmrock80s.ice.infomaniak.ch/ouifmeighties.mp3	80s rock	0
+OUI FM Rock 90's	https://ouifmrock90s.ice.infomaniak.ch/ouifmnineties.mp3	90s rock	0
+OUI FM Rock 2000	https://ouifmrock2000s.ice.infomaniak.ch/ouifmrock2000.mp3	2000s rock	0
+OUI FM Rock Francais	https://ouifmrockfrancais.ice.infomaniak.ch/ouifmrockfrancais.mp3	french rock	0
+OUI FM Girls Rock	https://ouifmgirlsrock.ice.infomaniak.ch/ouifmgirlsrock.mp3	women in rock	0
+OUI FM Woodstock	https://ouifmwoodstock.ice.infomaniak.ch/ouifmwoodstock.mp3	woodstock era	0
+OUI FM Bring The Noise	https://ouifmbringthenoise.ice.infomaniak.ch/ouifmbringthenoise.mp3	heavy rock	0
+OUI FM Rock'N'Food	https://ouifmrocknfood.ice.infomaniak.ch/ouifmrocknfood.mp3	rock selection	0
+OUI FM Les Slows du Rock	https://ouifmlesslowsdurock.ice.infomaniak.ch/ouifmslowrock.mp3	rock ballads	0
+OUI FM Summertime	https://ouifmsummertime.ice.infomaniak.ch/ouifmsummertime.mp3	summer rock	0
+OUI FM Top Of The Week	https://ouifmtopoftheweek.ice.infomaniak.ch/ouifmtopweek.mp3	weekly chart	0
+BBC Radio 1	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/cfs/bbc_radio_one.m3u8	pop / new music	0
+BBC Radio 1Xtra	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/aks/bbc_1xtra.m3u8	hip hop / r'n'b	0
+BBC Radio 2	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/aks/bbc_radio_two.m3u8	pop / rock	0
+BBC Radio 3	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/cfs/bbc_radio_three.m3u8	classical / jazz	0
+BBC Radio 3 Unwind	https://lsn.lv/bbcradio.m3u8?station=bbc_radio_three_unwind&bitrate=320000	calm classical	0
+BBC Radio 6 Music	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/cfs/bbc_6music.m3u8	alternative	1
+Radio Swiss Jazz	https://stream.srg-ssr.ch/m/rsj/mp3_128	jazz	1
+Radio Swiss Classic	https://stream.srg-ssr.ch/m/rsc_de/mp3_128	classical	0
+Radio Swiss Pop	https://stream.srg-ssr.ch/m/rsp/mp3_128	pop	0
