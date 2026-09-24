@@ -49,6 +49,7 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
             val c = MediaController.Builder(app, token).buildAsync().await()
             controller = c
             c.addListener(listener)
+            syncQueue(c, activeList)
             refresh(c)
         }
     }
@@ -84,8 +85,7 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
             if (!c.isPlaying) c.play()
             return
         }
-        val items = queue.map { MediaItem.Builder().setMediaId(it.id).build() }
-        c.setMediaItems(items, queue.indexOf(station).coerceAtLeast(0), C.TIME_UNSET)
+        c.setMediaItems(queue.toMediaItems(), queue.indexOf(station).coerceAtLeast(0), C.TIME_UNSET)
         c.prepare()
         c.play()
     }
@@ -101,8 +101,62 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun next() = controller?.seekToNextMediaItem()
-    fun previous() = controller?.seekToPreviousMediaItem()
+    /** Stations of the tab currently shown (Favorites or All), in on-screen order. */
+    private var activeList: List<Station> = emptyList()
+
+    /** Called whenever the active tab or its contents change, so next/previous follow that tab. */
+    fun setActiveList(list: List<Station>) {
+        activeList = list
+        controller?.let { syncQueue(it, list) }
+    }
+
+    fun next() = step(forward = true)
+    fun previous() = step(forward = false)
+
+    /** Next/previous cycle (wrapping around) through the active tab's list. */
+    private fun step(forward: Boolean) {
+        val c = controller ?: return
+        val list = activeList
+        if (list.isEmpty()) return
+        if (syncQueue(c, list)) {
+            if (forward) c.seekToNextMediaItem() else c.seekToPreviousMediaItem()
+            if (c.playerError != null) c.prepare()
+            c.play()
+            return
+        }
+        // The playing station isn't in this tab (e.g. a non-favorite while on Favorites):
+        // jump to its alphabetical neighbour within the tab.
+        val current = StationRepository[c.currentMediaItem?.mediaId]
+        val index = if (current == null) {
+            if (forward) 0 else list.lastIndex
+        } else {
+            val pos = StationRepository.sorted(list + current).indexOf(current)
+            if (forward) pos % list.size else (pos - 1 + list.size) % list.size
+        }
+        c.setMediaItems(list.toMediaItems(), index, C.TIME_UNSET)
+        c.prepare()
+        c.play()
+    }
+
+    /**
+     * Makes the player's queue equal to [list] without interrupting the current station, as long as
+     * that station is in [list]. Returns false (leaving the queue alone) when it isn't.
+     */
+    private fun syncQueue(c: MediaController, list: List<Station>): Boolean {
+        val ids = list.map { it.id }
+        if (c.mediaItemCount == 0 || ids.isEmpty()) return false
+        if ((0 until c.mediaItemCount).map { c.getMediaItemAt(it).mediaId } == ids) return true
+        val pos = ids.indexOf(c.currentMediaItem?.mediaId)
+        if (pos < 0) return false
+        val current = c.currentMediaItemIndex
+        c.removeMediaItems(current + 1, c.mediaItemCount)
+        c.removeMediaItems(0, current)
+        c.addMediaItems(0, list.subList(0, pos).toMediaItems())
+        c.addMediaItems(list.subList(pos + 1, list.size).toMediaItems())
+        return true
+    }
+
+    private fun List<Station>.toMediaItems() = map { MediaItem.Builder().setMediaId(it.id).build() }
 
     fun toggleFavorite(station: Station) = StationRepository.toggleFavorite(station.id)
 

@@ -113,6 +113,8 @@ class RadioService : MediaLibraryService() {
             // Holds CPU + Wi-Fi locks while playing so the stream survives screen-off / doze.
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
+            // Next/previous wrap around the station list instead of stopping at the ends.
+            .apply { repeatMode = Player.REPEAT_MODE_ALL }
     }
 
     private fun audioAttributes(spatial: Boolean) = AudioAttributes.Builder()

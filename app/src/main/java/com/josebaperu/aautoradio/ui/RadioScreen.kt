@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -83,14 +84,15 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
     var query by rememberSaveable { mutableStateOf("") }
     var showEq by remember { mutableStateOf(false) }
 
-    val shown: List<Station> = remember(tab, favorites, query, searching, descending) {
-        val base = StationRepository.sorted(
-            if (tab == 0) vm.stations.filter { it.id in favorites } else vm.stations,
-            descending,
-        )
+    // The active tab's full list; next/previous and the player queue follow it.
+    val tabList: List<Station> = remember(tab, favorites, descending) {
+        StationRepository.sorted(if (tab == 0) vm.stations.filter { it.id in favorites } else vm.stations, descending)
+    }
+    LaunchedEffect(tabList) { vm.setActiveList(tabList) }
+    val shown: List<Station> = remember(tabList, query, searching) {
         val q = query.trim().lowercase()
-        if (!searching || q.isEmpty()) base
-        else base.filter { q in it.name.lowercase() || q in it.genre.lowercase() }
+        if (!searching || q.isEmpty()) tabList
+        else tabList.filter { q in it.name.lowercase() || q in it.genre.lowercase() }
     }
     val sections = remember(shown) { shown.groupBy { it.groupLetter } }
 
@@ -192,7 +194,7 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
                         isCurrent = station.id == nowPlaying.station?.id,
                         isPlaying = station.id == nowPlaying.station?.id && nowPlaying.isPlaying,
                         isFavorite = station.id in favorites,
-                        onClick = { vm.play(station, shown) },
+                        onClick = { vm.play(station, tabList) },
                         onFavorite = { vm.toggleFavorite(station) },
                         modifier = Modifier.animateItem(),
                     )
