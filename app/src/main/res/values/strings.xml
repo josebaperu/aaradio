@@ -3,7 +3,6 @@
     <string name="favorites">Favorites</string>
     <string name="all_stations">All</string>
     <string name="search">Search</string>
-    <string name="search_hint">Search stations or genres</string>
     <string name="equalizer">Equalizer</string>
     <string name="custom">Custom</string>
     <string name="add_favorite">Add to favorites</string>

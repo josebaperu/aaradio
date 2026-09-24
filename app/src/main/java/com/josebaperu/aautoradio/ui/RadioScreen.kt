@@ -108,7 +108,6 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
                             TextField(
                                 value = query,
                                 onValueChange = { query = it },
-                                placeholder = { Text(stringResource(R.string.search_hint)) },
                                 singleLine = true,
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = Color.Transparent,
@@ -125,6 +124,14 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
                                 contentDescription = stringResource(R.string.search),
                             )
                         }
+                    },
+                    scrollBehavior = scroll,
+                )
+                Surface(color = MaterialTheme.colorScheme.surface) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         TextButton(onClick = vm::toggleSort) {
                             Icon(painterResource(R.drawable.ic_sort_by_alpha), contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(6.dp))
@@ -135,6 +142,7 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
                                 },
                             )
                         }
+                        Spacer(Modifier.weight(1f))
                         IconButton(onClick = onToggleTheme) {
                             Icon(
                                 painterResource(if (isDark) R.drawable.ic_light_mode else R.drawable.ic_dark_mode),
@@ -148,9 +156,8 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
                                 tint = if (eqState.enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                    },
-                    scrollBehavior = scroll,
-                )
+                    }
+                }
                 PrimaryTabRow(selectedTabIndex = tab) {
                     Tab(tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(R.string.favorites) + " · ${favorites.size}") })
                     Tab(tab == 1, onClick = { tab = 1 }, text = { Text(stringResource(R.string.all_stations) + " · ${vm.stations.size}") })
