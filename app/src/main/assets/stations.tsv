@@ -1,13 +1,4 @@
-# tuner station list
 # name<TAB>url<TAB>genre<TAB>favorite(0/1)
-#
-# This file ships with the source and is the default list. Your own edits
-# (from inside the app, or by hand) go to ~/.config/tuner/stations.tsv,
-# which takes precedence over this one when it exists.
-#
-# Sources: radioparadise.com, radiofrance.fr/fip, jazzradio.fr, ouifm.fr,
-# bbc.com/audio, srgssr.ch. Every url below was verified against its stream.
-# OUI FM and BBC stream urls were resolved through the radio.net directory.
 Radio Paradise Main	https://stream.radioparadise.com/mp3-192	eclectic	1
 Radio Paradise Mellow	https://stream.radioparadise.com/mellow-192	mellow mix	0
 Radio Paradise Rock	https://stream.radioparadise.com/rock-192	rock mix	0
@@ -80,8 +71,8 @@ BBC Radio 1	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642
 BBC Radio 1Xtra	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/aks/bbc_1xtra.m3u8	hip hop / r'n'b	0
 BBC Radio 2	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/aks/bbc_radio_two.m3u8	pop / rock	0
 BBC Radio 3	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/cfs/bbc_radio_three.m3u8	classical / jazz	0
-BBC Radio 3 Unwind	https://lsn.lv/bbcradio.m3u8?station=bbc_radio_three_unwind&bitrate=320000	calm classical	0
+BBC Radio 3 Unwind	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/cfs/bbc_radio_three_unwind.m3u8	calm classical	0
 BBC Radio 6 Music	https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/audio_syndication_low_sbr_v1/cfs/bbc_6music.m3u8	alternative	1
-Radio Swiss Jazz	https://stream.srg-ssr.ch/m/rsj/mp3_128	jazz	1
-Radio Swiss Classic	https://stream.srg-ssr.ch/m/rsc_de/mp3_128	classical	0
-Radio Swiss Pop	https://stream.srg-ssr.ch/m/rsp/mp3_128	pop	0
+Radio Swiss Jazz	https://stream.srg-ssr.ch/srgssr/rsj/mp3/128	jazz	1
+Radio Swiss Classic	https://stream.srg-ssr.ch/srgssr/rsc_de/mp3/128	classical	0
+Radio Swiss Pop	https://stream.srg-ssr.ch/srgssr/rsp/mp3/128	pop	0

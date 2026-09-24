@@ -32,6 +32,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -83,6 +85,8 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var showEq by remember { mutableStateOf(false) }
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(vm) { vm.errors.collect { snackbar.showSnackbar(it) } }
 
     // The active tab's full list; next/previous and the player queue follow it.
     val tabList: List<Station> = remember(tab, favorites, descending) {
@@ -100,6 +104,7 @@ fun RadioScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel =
 
     Scaffold(
         modifier = Modifier.nestedScroll(scroll.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             Column {
                 TopAppBar(
@@ -299,9 +304,9 @@ private fun PlayerBar(
             Column(Modifier.weight(1f)) {
                 Text(station.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    nowPlaying.error ?: nowPlaying.trackInfo ?: station.genre.replaceFirstChar(Char::titlecase),
+                    nowPlaying.trackInfo ?: station.genre.replaceFirstChar(Char::titlecase),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (nowPlaying.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )

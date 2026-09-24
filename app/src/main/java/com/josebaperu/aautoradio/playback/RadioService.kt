@@ -139,26 +139,43 @@ class RadioService : MediaLibraryService() {
     /** Live streams drop (tunnels, cell handovers). Retry with backoff instead of giving up. */
     private inner class ReconnectListener : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
-            if (state == Player.STATE_READY) retries = 0
+            if (state == Player.STATE_READY) {
+                retries = 0
+                session?.setPlaybackException(null)
+            }
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             retries = 0
+            session?.setPlaybackException(null)
             mediaItem?.mediaId?.let { StationRepository.lastPlayedId = it }
             session?.setMediaButtonPreferences(favoriteButtons())
         }
 
         override fun onPlayerError(error: PlaybackException) {
+            showError(error)
             if (retries >= MAX_RETRIES) return
             val delayMs = 2_000L * (1 shl retries++)
             player.playWhenReady = true
             scope.launch {
                 kotlinx.coroutines.delay(delayMs)
                 if (player.playerError != null) {
+                    // The override would otherwise keep controllers in the error state while this retry buffers.
+                    session?.setPlaybackException(null)
                     player.prepare()
                     player.play()
                 }
             }
+        }
+
+        /**
+         * Android Auto can't show app UI such as a snackbar; it renders the session's error state instead.
+         * Swap ExoPlayer's raw message for the same friendly text the phone shows, keeping the error code.
+         */
+        private fun showError(error: PlaybackException) {
+            val station = StationRepository[player.currentMediaItem?.mediaId]
+            val message = describePlaybackError(error, station)
+            session?.setPlaybackException(PlaybackException(message, error.cause, error.errorCode))
         }
     }
 

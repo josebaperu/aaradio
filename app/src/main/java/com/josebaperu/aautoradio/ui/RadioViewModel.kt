@@ -7,16 +7,19 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.josebaperu.aautoradio.data.Station
 import com.josebaperu.aautoradio.data.StationRepository
 import com.josebaperu.aautoradio.playback.RadioService
+import com.josebaperu.aautoradio.playback.describePlaybackError
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
@@ -26,7 +29,6 @@ data class NowPlaying(
     val isBuffering: Boolean = false,
     /** Song info from the stream's ICY / ID3 metadata, when the station sends it. */
     val trackInfo: String? = null,
-    val error: String? = null,
 )
 
 class RadioViewModel(app: Application) : AndroidViewModel(app) {
@@ -34,6 +36,12 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
     private var controller: MediaController? = null
     private val _nowPlaying = MutableStateFlow(NowPlaying())
     val nowPlaying: StateFlow<NowPlaying> = _nowPlaying.asStateFlow()
+
+    /** One-shot playback error messages, shown as a snackbar. */
+    private val _errors = Channel<String>(Channel.CONFLATED)
+    val errors: Flow<String> = _errors.receiveAsFlow()
+    /** Error already reported since the last user action or successful start, so service retries don't repeat it. */
+    private var reportedError: String? = null
 
     val stations: List<Station> = StationRepository.stations
     val favorites = StationRepository.favorites
@@ -61,8 +69,12 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
             isPlaying = player.isPlaying,
             isBuffering = player.playbackState == Player.STATE_BUFFERING && player.playWhenReady,
             trackInfo = player.mediaMetadata.trackInfo(station),
-            error = player.playerError?.let(::describe),
         )
+        if (player.playbackState == Player.STATE_READY) reportedError = null
+        player.playerError?.let { describePlaybackError(it, station) }?.takeIf { it != reportedError }?.let {
+            reportedError = it
+            _errors.trySend(it)
+        }
     }
 
     private fun MediaMetadata.trackInfo(station: Station?): String? {
@@ -70,17 +82,11 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
         return t?.takeIf { it.isNotEmpty() && it != station?.name }
     }
 
-    private fun describe(e: PlaybackException) = when (e.errorCode) {
-        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
-        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> "No connection — retrying…"
-        PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
-        PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND -> "Station is offline"
-        else -> "Playback error (${e.errorCodeName})"
-    }
 
     /** Play [station], queueing [queue] so next/previous move through the list the user tapped in. */
     fun play(station: Station, queue: List<Station>) {
         val c = controller ?: return
+        reportedError = null
         if (c.currentMediaItem?.mediaId == station.id && c.playerError == null) {
             if (!c.isPlaying) c.play()
             return
@@ -92,6 +98,7 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
 
     fun togglePlayPause() {
         val c = controller ?: return
+        reportedError = null
         when {
             c.mediaItemCount == 0 -> StationRepository[StationRepository.lastPlayedId]?.let { play(it, stations) }
                 ?: play(stations.first(), stations)
@@ -116,6 +123,7 @@ class RadioViewModel(app: Application) : AndroidViewModel(app) {
     /** Next/previous cycle (wrapping around) through the active tab's list. */
     private fun step(forward: Boolean) {
         val c = controller ?: return
+        reportedError = null
         val list = activeList
         if (list.isEmpty()) return
         if (syncQueue(c, list)) {
