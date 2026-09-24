@@ -274,16 +274,17 @@ class RadioService : MediaLibraryService() {
             startIndex: Int,
             startPositionMs: Long,
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            val stations = mediaItems.mapNotNull { item ->
-                StationRepository[item.mediaId]
+            if (mediaItems.size == 1) {
+                val item = mediaItems[0]
+                val station = MediaTree.stationFor(item.mediaId)
                     ?: item.requestMetadata.searchQuery?.let { StationRepository.search(it).firstOrNull() }
+                    // Voice "play aautoradio" with no match: resume the last station.
+                    ?: StationRepository[StationRepository.lastPlayedId]
+                    ?: StationRepository.stations.first()
+                return Futures.immediateFuture(expand(station, MediaTree.queueFor(item.mediaId)))
             }
-            if (stations.isEmpty()) {
-                // Voice "play aautoradio" with no match: resume the last station.
-                val last = StationRepository[StationRepository.lastPlayedId] ?: StationRepository.stations.first()
-                return Futures.immediateFuture(expand(last))
-            }
-            if (stations.size == 1) return Futures.immediateFuture(expand(stations[0]))
+            val stations = mediaItems.mapNotNull { MediaTree.stationFor(it.mediaId) }
+            if (stations.isEmpty()) return Futures.immediateFuture(expand(StationRepository.stations.first()))
             return Futures.immediateFuture(
                 MediaSession.MediaItemsWithStartPosition(
                     stations.map { it.toMediaItem() },
@@ -299,7 +300,7 @@ class RadioService : MediaLibraryService() {
             mediaItems: MutableList<MediaItem>,
         ): ListenableFuture<MutableList<MediaItem>> =
             Futures.immediateFuture(
-                mediaItems.mapNotNull { StationRepository[it.mediaId]?.toMediaItem() }.toMutableList()
+                mediaItems.mapNotNull { MediaTree.stationFor(it.mediaId)?.toMediaItem() }.toMutableList()
             )
 
         /** Lets the system (e.g. Android Auto on connect, or the Bluetooth play button) resume the last station. */
@@ -314,8 +315,11 @@ class RadioService : MediaLibraryService() {
             return Futures.immediateFuture(expand(last))
         }
 
-        private fun expand(station: com.josebaperu.aautoradio.data.Station): MediaSession.MediaItemsWithStartPosition {
-            val queue = MediaTree.queueFor(station)
+        private fun expand(
+            station: com.josebaperu.aautoradio.data.Station,
+            list: List<com.josebaperu.aautoradio.data.Station>? = null,
+        ): MediaSession.MediaItemsWithStartPosition {
+            val queue = list?.takeIf { station in it } ?: MediaTree.queueFor(station.id)!!
             return MediaSession.MediaItemsWithStartPosition(queue.map { it.toMediaItem() }, queue.indexOf(station), C.TIME_UNSET)
         }
     }
