@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:name=".RadioApp"
+        android:name=".YTMapp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
@@ -24,7 +24,7 @@
         <!-- Small icon Android Auto shows for the app. -->
         <meta-data
             android:name="com.google.android.gms.car.notification.SmallIcon"
-            android:resource="@drawable/ic_radio" />
+            android:resource="@drawable/media3_notification_small_icon" />
 
         <activity
             android:name=".ui.MainActivity"
@@ -39,6 +39,7 @@
         <service
             android:name=".playback.RadioService"
             android:exported="true"
+            android:label="@string/auto_title"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaLibraryService" />

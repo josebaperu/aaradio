@@ -4,22 +4,29 @@ plugins {
 }
 
 android {
-    namespace = "com.josebaperu.aautoradio"
+    namespace = "com.josebaperu.ytmaa"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.josebaperu.aautoradio"
+        applicationId = "com.josebaperu.ytmaa"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        // The yt-dlp runtime is about 45 MB per ABI. This app targets phones, which are arm64.
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             // Sign with the debug key so `assembleRelease` produces an installable APK.
             // Replace with a real signing config before publishing.
             signingConfig = signingConfigs.getByName("debug")
@@ -38,14 +45,15 @@ android {
     buildFeatures {
         compose = true
     }
-}
 
-// Keep the root-level stations.tsv as the single source of truth for the bundled list.
-val syncStations = tasks.register<Copy>("syncStations") {
-    from(rootProject.file("stations.tsv"))
-    into(layout.projectDirectory.dir("src/main/assets"))
+    // yt-dlp ships Python and QuickJS as native executables named *.so. They have to be
+    // extracted so the process can run them.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
-tasks.named("preBuild") { dependsOn(syncStations) }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -63,6 +71,8 @@ dependencies {
     implementation(libs.media3.session)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.guava)
+    implementation(libs.youtubedl.android)
+    implementation(libs.youtubedl.ffmpeg)
 
     testImplementation(libs.junit)
 }
