@@ -19,10 +19,19 @@ object MediaTree {
 
     fun rootItem(): MediaItem = folder(ROOT, "aautoradio", MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
 
-    /** Hints so Android Auto renders stations as a grid of tiles, and folders as lists. */
+    /**
+     * Android Auto draws folders and stations as wide rows, and shows a search field.
+     * Search lists stations whose name or genre contains the text.
+     */
     fun rootExtras() = Bundle().apply {
+        putAll(listStyle())
+        putBoolean("android.media.browse.SEARCH_SUPPORTED", true)
+    }
+
+    /** Applied to a browsable row so its children stay wide list rows instead of square tiles. */
+    private fun listStyle() = Bundle().apply {
         putInt(MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE, MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM)
-        putInt(MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE, MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM)
+        putInt(MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE, MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM)
     }
 
     fun children(parentId: String): List<MediaItem>? = when {
@@ -88,6 +97,7 @@ object MediaTree {
                 .setIsBrowsable(true)
                 .setIsPlayable(false)
                 .setMediaType(type)
+                .setExtras(listStyle())
                 .build()
         )
         .build()
