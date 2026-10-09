@@ -77,6 +77,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.josebaperu.ytmaa.R
 import com.josebaperu.ytmaa.audio.EqStore
 import com.josebaperu.ytmaa.data.YtLibrary
+import com.josebaperu.ytmaa.playback.TrackStore
 import com.josebaperu.ytmaa.data.YtPlaylist
 import com.josebaperu.ytmaa.data.YtPlaylistFile
 import com.josebaperu.ytmaa.data.YtTrack
@@ -105,6 +106,7 @@ fun YTMScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel = v
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(vm) { vm.errors.collect { snackbar.showSnackbar(it) } }
     LaunchedEffect(Unit) { YtLibrary.messages.collect { snackbar.showSnackbar(it) } }
+    LaunchedEffect(Unit) { TrackStore.problems.collect { snackbar.showSnackbar(it) } }
     LaunchedEffect(Unit) {
         YtLibrary.readyToPlay.collect { url ->
             val playlist = YtLibrary.state.value.playlists.find { it.url == url } ?: return@collect

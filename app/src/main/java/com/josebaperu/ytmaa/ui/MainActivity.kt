@@ -1,6 +1,7 @@
 package com.josebaperu.ytmaa.ui
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -21,12 +22,18 @@ class MainActivity : ComponentActivity() {
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* notification is optional */ }
 
+    /** Lets a file already in Music play instead of being saved over. */
+    private val musicPermission =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+        val music = musicPermissions()
+        if (music.isNotEmpty()) musicPermission.launch(music)
         setContent {
             val choice by ThemePrefs.dark.collectAsStateWithLifecycle()
             val dark = choice ?: isSystemInDarkTheme()
@@ -41,5 +48,13 @@ class MainActivity : ComponentActivity() {
                 YTMScreen(isDark = dark, onToggleTheme = { ThemePrefs.setDark(!dark) })
             }
         }
+    }
+
+    private fun musicPermissions(): Array<String> {
+        val needed = ArrayList<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) needed += Manifest.permission.READ_MEDIA_AUDIO
+        else needed += Manifest.permission.READ_EXTERNAL_STORAGE
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) needed += Manifest.permission.WRITE_EXTERNAL_STORAGE
+        return needed.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }.toTypedArray()
     }
 }

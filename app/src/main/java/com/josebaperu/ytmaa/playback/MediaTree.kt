@@ -1,6 +1,5 @@
 package com.josebaperu.ytmaa.playback
 
-import android.net.Uri
 import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -92,7 +91,7 @@ object MediaTree {
         val title = track.title.ifBlank { track.id }
         return MediaItem.Builder()
             .setMediaId(YtMedia.mediaId(playlist.id, index, track))
-            .setUri(Uri.parse(track.url))
+            .setUri(YtMedia.playableUri(track.url, playlist.id, index, track.id))
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(title)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.josebaperu.ytmaa.R
+import com.josebaperu.ytmaa.playback.TrackStore
 import com.josebaperu.ytmaa.playback.YtDlp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -74,6 +75,7 @@ object YtLibrary {
         app = context.applicationContext
         prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         YtDlp.attach(app)
+        TrackStore.attach(app)
         store = File(app.filesDir, "ytm-library.json")
         archiveStore = File(app.filesDir, "ytm-removed.json")
         val saved = if (store.isFile) {

@@ -33,6 +33,7 @@ import com.josebaperu.ytmaa.audio.AudioEffectsProcessor
 import com.josebaperu.ytmaa.audio.EffectsStore
 import com.josebaperu.ytmaa.data.YtLibrary
 import com.josebaperu.ytmaa.data.YtPlaylist
+import com.josebaperu.ytmaa.data.YtTrack
 import com.josebaperu.ytmaa.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,12 @@ class RadioService : MediaLibraryService() {
     private var session: MediaLibrarySession? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var retries = 0
+    /** A file from Music failed to decode; the rest of this track plays from the stream. */
+    private var diskRetried = false
+    /** Next track already handed to the saver for this playback, so ready events do not queue it again. */
+    private var prefetchedKey: String? = null
+    /** Media id whose disk failure is being retried, so that retry does not clear the skip. */
+    private var diskRetryItem: String? = null
     /** Android Auto connections; headphone-only effects pause while any is connected. */
     private var carControllers = 0
 
@@ -108,13 +115,13 @@ class RadioService : MediaLibraryService() {
                 .build()
         }
         val youtube = DefaultHttpDataSource.Factory()
-            .setUserAgent("Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36")
-            .setDefaultRequestProperties(mapOf("Referer" to "https://music.youtube.com/"))
+            .setUserAgent(YtDlp.USER_AGENT)
+            .setDefaultRequestProperties(mapOf("Referer" to YtDlp.REFERER))
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(20_000)
         return ExoPlayer.Builder(this, renderers)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(YtStreamDataSource.Factory(youtube)))
+            .setMediaSourceFactory(DefaultMediaSourceFactory(YtStreamDataSource.Factory(this, youtube)))
             .setAudioAttributes(audioAttributes(EffectsStore.state.value.systemSpatialAudio), /* handleAudioFocus = */ true)
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
@@ -148,6 +155,7 @@ class RadioService : MediaLibraryService() {
             if (state == Player.STATE_READY) {
                 retries = 0
                 session?.setPlaybackException(null)
+                prefetchNext()
             } else if (state == Player.STATE_ENDED) {
                 player.pause()
             }
@@ -155,12 +163,30 @@ class RadioService : MediaLibraryService() {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             retries = 0
+            if (mediaItem?.mediaId != diskRetryItem) {
+                diskRetried = false
+                TrackStore.clearSkip()
+            }
+            diskRetryItem = null
             session?.setPlaybackException(null)
             YtMedia.playlistId(mediaItem?.mediaId)?.let(YtLibrary::rememberPlaying)
             session?.setMediaButtonPreferences(favoriteButtons())
         }
 
         override fun onPlayerError(error: PlaybackException) {
+            val playing = currentSaved()
+            if (playing != null && TrackStore.wasDisk(playing.album, playing.track.id) && !diskRetried) {
+                diskRetried = true
+                diskRetryItem = player.currentMediaItem?.mediaId
+                TrackStore.discard(playing.album, playing.track)
+                if (TrackStore.existing(playing.album, playing.track) != null) {
+                    TrackStore.skip(playing.album, playing.track.id)
+                }
+                session?.setPlaybackException(null)
+                player.prepare()
+                player.play()
+                return
+            }
             val id = player.currentMediaItem?.mediaId
             if (YtMedia.isYtm(id)) YtDlp.invalidate(YtMedia.watchUrl(id))
             showError(error)
@@ -293,6 +319,10 @@ class RadioService : MediaLibraryService() {
             startIndex: Int,
             startPositionMs: Long,
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            diskRetried = false
+            diskRetryItem = null
+            prefetchedKey = null
+            TrackStore.clearSkip()
             if (mediaItems.size > 1 && mediaItems.all { YtMedia.isYtm(it.mediaId) }) {
                 return ready(ytmQueue(mediaItems, startIndex, startPositionMs))
             }
@@ -385,8 +415,46 @@ class RadioService : MediaLibraryService() {
 
         private fun MediaItem.withWatchUri(): MediaItem {
             val watch = YtMedia.watchUrl(mediaId) ?: return this
-            return buildUpon().setUri(Uri.parse(watch)).build()
+            val playlistId = YtMedia.playlistId(mediaId)
+            val index = YtMedia.index(mediaId)
+            val videoId = YtMedia.videoId(mediaId)
+            val uri = if (playlistId != null && index != null && videoId != null) {
+                YtMedia.playableUri(watch, playlistId, index, videoId)
+            } else {
+                Uri.parse(watch)
+            }
+            return buildUpon().setUri(uri).build()
         }
+    }
+
+    /** The track in the queue now, when it belongs to an imported playlist. */
+    private fun currentSaved(): SavedPlay? {
+        val item = player.currentMediaItem ?: return null
+        val playlist = YtLibrary.byId(YtMedia.playlistId(item.mediaId) ?: return null) ?: return null
+        val videoId = YtMedia.videoId(item.mediaId) ?: return null
+        val index = YtMedia.index(item.mediaId)
+        val track = playlist.tracks.getOrNull(index ?: -1)?.takeIf { it.id == videoId }
+            ?: playlist.tracks.find { it.id == videoId }
+            ?: return null
+        return SavedPlay(playlist.title, track)
+    }
+
+    /** Start saving the next track while this one plays, when it is not already on disk. */
+    private fun prefetchNext() {
+        val index = player.currentMediaItemIndex
+        if (index < 0 || index + 1 >= player.mediaItemCount) return
+        val uri = player.getMediaItemAt(index + 1).localConfiguration?.uri ?: return
+        val ref = YtMedia.savedRef(uri) ?: return
+        val playlist = YtLibrary.byId(ref.playlistId) ?: return
+        val track = playlist.tracks.getOrNull(ref.index)?.takeIf { it.id == ref.videoId }
+            ?: playlist.tracks.find { it.id == ref.videoId }
+            ?: return
+        val key = ref.playlistId + "\u0000" + track.id
+        if (key == prefetchedKey) return
+        prefetchedKey = key
+        val at = playlist.tracks.indexOf(track)
+        val number = if (at >= 0) at + 1 else ref.index + 1
+        TrackStore.request(playlist.title, track, number, playlist.tracks.size, YtMedia.watchTarget(uri))
     }
 
     private fun favoriteButtons(): ImmutableList<CommandButton> {
@@ -427,6 +495,8 @@ class RadioService : MediaLibraryService() {
         private const val ACTION_MEDIA_ITEM_ID = "androidx.media.utils.extras.KEY_CUSTOM_BROWSER_ACTION_MEDIA_ITEM_ID"
     }
 }
+
+private data class SavedPlay(val album: String, val track: YtTrack)
 
 private fun <T> List<T>.page(page: Int, pageSize: Int): List<T> {
     if (pageSize <= 0 || pageSize == Int.MAX_VALUE) return this

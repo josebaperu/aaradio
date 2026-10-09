@@ -9,6 +9,10 @@ Internet radio for Android and Android Auto. Streams the stations in `stations.t
 - **Audio effects** (in the equalizer sheet, each with a toggle): bass enhancer, stereo width, virtual surround and crossfeed for headphones, reverb (Room/Club/Hall), volume leveler, mono, and Android's own spatial audio. All the DSP is plain Kotlin in the same processor chain as the EQ, ending in a safety limiter. Headphone-only effects pause automatically while Android Auto is connected
 - MP3/AAC Icecast and HLS streams, ICY "now playing" song titles, automatic reconnection with backoff (tunnels, cell handovers)
 
+## Saved tracks
+
+When a playlist track streams, the app saves an `.opus` copy in the phone's Music folder. The playlist title is the directory and the track title is the file (`Music/Night Drive/Blue.opus`). The next play of that track uses the file. Title, artist, album, track number and a `youtube_id` tag are stored in the file. A file already in that place is played as it is and is not replaced. A second track with the same title is saved as `Title [videoId].opus`. A copy this app wrote that will not play is removed, and that play falls back to the stream.
+
 ## Build
 
 ```

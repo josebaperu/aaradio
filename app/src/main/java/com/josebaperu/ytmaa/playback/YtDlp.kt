@@ -15,9 +15,13 @@ import java.util.regex.Pattern
 /**
  * yt-dlp, bundled for Android. Listing a playlist is saved by [com.josebaperu.ytmaa.data.YtLibrary].
  * A stream address expires, so it is resolved when playback opens the track and kept only in memory.
+ * [TrackStore] writes a finished copy into the Music folder.
  */
 object YtDlp {
     private const val TAG = "YtDlp"
+    const val USER_AGENT =
+        "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
+    const val REFERER = "https://music.youtube.com/"
     private val EXPIRE = Pattern.compile("[?&/]expire[=/](\\d+)")
     private val lock = Any()
     private val activeId = AtomicReference<String?>(null)

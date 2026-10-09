@@ -59,4 +59,5 @@
     <string name="playlist_resolve_failed">Couldn\'t list this playlist</string>
     <string name="playlist_preparing">Preparing yt-dlp…</string>
     <string name="playlist_progress">Resolving %1$d of %2$d</string>
+    <string name="save_failed">Couldn\'t save %1$s: %2$s</string>
 </resources>
