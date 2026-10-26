@@ -3,6 +3,7 @@
     <string name="auto_title">YTM</string>
     <string name="favorites">Favorites</string>
     <string name="all_playlists">All</string>
+    <string name="new_playlists">New</string>
     <string name="add_favorite">Add to favorites</string>
     <string name="remove_favorite">Remove from favorites</string>
     <string name="no_favorites">No favorites yet. Tap the heart on a playlist to add it here.</string>

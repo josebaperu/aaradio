@@ -95,7 +95,7 @@ fun YTMScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel = v
     val library by YtLibrary.state.collectAsStateWithLifecycle()
     val favorites by YtLibrary.favorites.collectAsStateWithLifecycle()
 
-    var tab by rememberSaveable { mutableIntStateOf(if (favorites.isEmpty()) 1 else 0) }
+    var tab by rememberSaveable { mutableIntStateOf(if (favorites.isEmpty()) TAB_ALL else TAB_FAVORITES) }
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var showEq by remember { mutableStateOf(false) }
@@ -148,8 +148,19 @@ fun YTMScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel = v
     }
 
     val ordered = remember(library.playlists) { YtPlaylistFile.sortedByTitle(library.playlists) }
-    val tabList = remember(tab, ordered, favorites) {
-        if (tab == 0) ordered.filter { it.url in favorites } else ordered
+    val unresolved = remember(ordered) { ordered.filter { !it.resolved } }
+    // New is only there while some albums still have no tracks. Leaving it returns to Favorites.
+    val showNew = unresolved.isNotEmpty()
+    val selectedTab = if (tab == TAB_NEW && !showNew) TAB_FAVORITES else tab
+    LaunchedEffect(showNew) {
+        if (!showNew && tab == TAB_NEW) tab = TAB_FAVORITES
+    }
+    val tabList = remember(selectedTab, ordered, favorites, unresolved) {
+        when (selectedTab) {
+            TAB_FAVORITES -> ordered.filter { it.url in favorites }
+            TAB_NEW -> unresolved
+            else -> ordered
+        }
     }
     val shownPlaylists = remember(tabList, query, searching) {
         val q = query.trim().lowercase()
@@ -223,17 +234,24 @@ fun YTMScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel = v
                     },
                     scrollBehavior = scroll,
                 )
-                PrimaryTabRow(selectedTabIndex = tab) {
+                PrimaryTabRow(selectedTabIndex = selectedTab) {
                     Tab(
-                        selected = tab == 0,
-                        onClick = { tab = 0 },
+                        selected = selectedTab == TAB_FAVORITES,
+                        onClick = { tab = TAB_FAVORITES },
                         text = { Text(stringResource(R.string.favorites) + " · ${favorites.size}") },
                     )
                     Tab(
-                        selected = tab == 1,
-                        onClick = { tab = 1 },
+                        selected = selectedTab == TAB_ALL,
+                        onClick = { tab = TAB_ALL },
                         text = { Text(stringResource(R.string.all_playlists) + " · ${library.playlists.size}") },
                     )
+                    if (showNew) {
+                        Tab(
+                            selected = selectedTab == TAB_NEW,
+                            onClick = { tab = TAB_NEW },
+                            text = { Text(stringResource(R.string.new_playlists) + " · ${unresolved.size}") },
+                        )
+                    }
                 }
             }
         },
@@ -280,7 +298,7 @@ fun YTMScreen(isDark: Boolean, onToggleTheme: () -> Unit, vm: RadioViewModel = v
             emptyMessage = stringResource(
                 when {
                     searching && query.isNotBlank() -> R.string.no_results
-                    tab == 0 -> R.string.no_favorites
+                    selectedTab == TAB_FAVORITES -> R.string.no_favorites
                     else -> R.string.no_playlists
                 },
             ),
@@ -454,6 +472,10 @@ private fun deleteChosenFile(context: Context, uri: Uri): Boolean = try {
 } catch (_: Exception) {
     false
 }
+
+private const val TAB_FAVORITES = 0
+private const val TAB_ALL = 1
+private const val TAB_NEW = 2
 
 private fun formatDuration(seconds: Double): String {
     if (seconds.isNaN() || seconds <= 0.0) return ""
